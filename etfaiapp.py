@@ -2,15 +2,10 @@ import streamlit as st
 import yfinance as yf
 import openai
 import sqlite3
-import os
 import time
-from dotenv import load_dotenv
 
-# Load environment variables from .env
-load_dotenv()
-
-# Set the OpenAI API key from the environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Use Streamlit's secrets management
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # Initialize SQLite Database for logging
 conn = sqlite3.connect('user_logs.db')
@@ -25,9 +20,6 @@ c.execute('''
     )
 ''')
 conn.commit()
-
-# Load OpenAI API key from environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Function to log queries and responses
 def log_query_response(user_query, response, feedback=None):
