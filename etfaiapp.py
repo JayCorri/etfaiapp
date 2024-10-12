@@ -56,15 +56,6 @@ def get_etf_data(ticker):
         "Dividend Yield (%)": dividend_display
     }
     
-# Display a section explaining why 'N/A' may appear for certain ETF values
-st.write("### Why Some Values Show 'N/A'")
-st.write("""
-- **Inconsistent Data**: Some ETFs may not report specific financial metrics, such as price-to-book ratio or dividend yield.
-- **Data Delays**: There might be delays in updating certain data fields, especially for newly listed ETFs.
-- **Not Applicable**: Certain metrics may not be applicable to all ETFs or are harder to calculate compared to individual stocks.
-- **API Limitations**: The data available through the Yahoo Finance API may not always include every field, even if it exists on their website.
-""")
-
 # Function to interact with OpenAI for natural language queries
 def interpret_query(query):
     try:
@@ -116,3 +107,12 @@ if st.button("Submit Query"):
     elif thumbs_down:
         log_query_response(user_query, response, 'thumbs_down')
         st.error("You disliked this response.")
+
+# Display a section explaining why 'N/A' may appear for certain ETF values
+st.write("### Why Some Values Show 'N/A'")
+st.write("""
+- **Inconsistent Data**: Some ETFs may not report specific financial metrics, such as price-to-book ratio or dividend yield.
+- **Data Delays**: There might be delays in updating certain data fields, especially for newly listed ETFs.
+- **Not Applicable**: Certain metrics may not be applicable to all ETFs or are harder to calculate compared to individual stocks.
+- **API Limitations**: The data available through the Yahoo Finance API may not always include every field, even if it exists on their website.
+""")
