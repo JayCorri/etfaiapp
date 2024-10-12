@@ -33,23 +33,52 @@ def log_query_response(user_query, response, feedback=None):
 # Function to fetch ETF data
 def get_etf_data(ticker):
     etf = yf.Ticker(ticker)
+    
+    # Some fields may be missing, so we need to handle missing data carefully
     growth = etf.info.get('trailingPE', 'N/A')
     value = etf.info.get('priceToBook', 'N/A')
     dividend = etf.info.get('dividendYield', 'N/A')
+    
+    # Handle the case where dividend or value is None
+    if dividend is not None and dividend != 'N/A':
+        dividend_display = dividend * 100  # Convert to percentage
+    else:
+        dividend_display = 'N/A'
+
+    if value is None or value == 'N/A':
+        value_display = 'N/A'
+    else:
+        value_display = value
+    
     return {
-        "Growth (PE Ratio)": growth,
-        "Value (Price to Book)": value,
-        "Dividend Yield (%)": dividend * 100 if dividend != 'N/A' else dividend
+        "Growth (PE Ratio)": growth if growth else 'N/A',
+        "Value (Price to Book)": value_display,
+        "Dividend Yield (%)": dividend_display
     }
+    
+# Display a section explaining why 'N/A' may appear for certain ETF values
+st.write("### Why Some Values Show 'N/A'")
+st.write("""
+- **Inconsistent Data**: Some ETFs may not report specific financial metrics, such as price-to-book ratio or dividend yield.
+- **Data Delays**: There might be delays in updating certain data fields, especially for newly listed ETFs.
+- **Not Applicable**: Certain metrics may not be applicable to all ETFs or are harder to calculate compared to individual stocks.
+- **API Limitations**: The data available through the Yahoo Finance API may not always include every field, even if it exists on their website.
+""")
 
 # Function to interact with OpenAI for natural language queries
 def interpret_query(query):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=f"Interpret the following query and fetch ETF data: {query}",
-        max_tokens=150
-    )
-    return response.choices[0].text.strip()
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # Use the appropriate model
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant for analyzing ETFs."},
+                {"role": "user", "content": f"Fetch ETF data for this query: {query}"}
+            ],
+            max_tokens=100
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"Error fetching data from OpenAI: {str(e)}"
 
 # Streamlit App Layout
 st.title("ETF Search and Analysis")
