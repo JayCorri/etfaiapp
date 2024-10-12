@@ -34,40 +34,34 @@ def log_query_response(user_query, response, feedback=None):
 def get_etf_data(ticker):
     etf = yf.Ticker(ticker)
     
-    # Some fields may be missing, so we need to handle missing data carefully
     growth = etf.info.get('trailingPE', 'N/A')
     value = etf.info.get('priceToBook', 'N/A')
     dividend = etf.info.get('dividendYield', 'N/A')
     
-    # Handle the case where dividend or value is None
-    if dividend is not None and dividend != 'N/A':
+    # Handle the case where dividend is None or 'N/A'
+    if dividend and dividend != 'N/A':
         dividend_display = dividend * 100  # Convert to percentage
     else:
         dividend_display = 'N/A'
-
-    if value is None or value == 'N/A':
-        value_display = 'N/A'
-    else:
-        value_display = value
     
     return {
         "Growth (PE Ratio)": growth if growth else 'N/A',
-        "Value (Price to Book)": value_display,
+        "Value (Price to Book)": value if value else 'N/A',
         "Dividend Yield (%)": dividend_display
     }
     
 # Function to interact with OpenAI for natural language queries
 def interpret_query(query):
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Use the appropriate model
+        response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant for analyzing ETFs."},
                 {"role": "user", "content": f"Fetch ETF data for this query: {query}"}
             ],
             max_tokens=100
         )
-        return response['choices'][0]['message']['content'].strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         return f"Error fetching data from OpenAI: {str(e)}"
 
